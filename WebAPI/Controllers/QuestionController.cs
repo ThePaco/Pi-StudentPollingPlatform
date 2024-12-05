@@ -56,7 +56,51 @@ namespace WebAPI.Controllers
 
         // GET Search
         
+        [HttpGet("[action]")]
+        public async Task<ActionResult<IEnumerable<QuestionDto>>> Search(int page, int size, string? orderBy, string? direction, string? filter)
+        {
+            var questions = await _context.Questions.ToListAsync();
+            IEnumerable<Question> ordered;
+            IEnumerable<Question> filteredQuestions;
 
+            if (filter != null)
+            {
+                filteredQuestions = questions.Where(x =>
+                    x.Tekst.Contains(filter, StringComparison.InvariantCultureIgnoreCase));
+            }
+            else
+            {
+                filteredQuestions = questions;
+            }
+
+            if (string.Compare(orderBy, "id", true) == 0)
+            {
+                ordered = filteredQuestions.OrderBy(x => x.Id);
+            }
+            else if (string.Compare(orderBy, "tekst", true) == 0)
+            {
+                ordered = filteredQuestions.OrderBy(x => x.Tekst);
+            }
+            else if (string.Compare(orderBy, "poll", true) == 0)
+            {
+                ordered = filteredQuestions.OrderBy(x => x.PollId);
+            }
+            else
+            {
+                ordered = filteredQuestions.OrderBy(x => x.Id);
+            }
+
+            if (string.Compare(direction, "desc", true) == 0)
+            {
+                ordered = ordered.Reverse();
+            }
+
+
+            var retVal = ordered.Skip((page - 1) * size).Take(size);
+
+
+            return Ok(_mapper.Map<List<QuestionDto>>(retVal));
+        }
 
         // POST api/<QuestionController>
         [HttpPost]
