@@ -21,6 +21,41 @@ namespace WebApp.Controllers
         }
         // GET: PollController
 
+        public async Task<IActionResult> Index(int? page, string? searchText)
+ {
+     int pageSize = 4;
+     int pageNumber = page ?? 1;
+     ViewData["pages"] = pageNumber;
+     List<Poll> piSudentPollingPlatContextPaged = null;
+     if (searchText != null)
+     {
+         piSudentPollingPlatContextPaged =
+             await _context.Polls
+             .Where(p => p.Title.Contains(searchText))
+             .OrderBy(p => p.Title)
+             .ToListAsync();
+
+
+
+         ViewData["pages"] = piSudentPollingPlatContextPaged.Count() / pageSize;
+         CookieOptions options = new CookieOptions();
+         options.Expires = DateTime.Now.AddDays(7);
+         Response.Cookies.Append("SearchText", searchText, options);
+         ViewData["page"] = page;
+
+         return View(piSudentPollingPlatContextPaged.ToPagedList(pageNumber, pageSize));
+     }
+     piSudentPollingPlatContextPaged =
+         await _context.Polls
+         .OrderBy(p => p.Title)
+         .ToListAsync();
+
+     Response.Cookies.Delete("SearchText");
+     ViewData["pages"] = piSudentPollingPlatContextPaged.Count() / pageSize;
+     ViewData["page"] = page;
+     return View(piSudentPollingPlatContextPaged.ToPagedList(pageNumber, pageSize));
+ }
+
         // GET: PollController/Details/5
         public ActionResult Details(int id)
         {
