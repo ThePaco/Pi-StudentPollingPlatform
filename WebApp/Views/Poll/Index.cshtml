@@ -1,0 +1,74 @@
+﻿@model X.PagedList.IPagedList<DAL.Models.Poll>
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Index";
+    string searchText = HttpContextAccessor.HttpContext.Request.Cookies["SearchText"];
+    var SongsItems = Model;
+    var page = (int?)ViewData["page"];
+    var pages = (int?)ViewData["pages"];
+}
+
+<h1>Polls</h1>
+<a asp-action="Create" class="btn btn-primary mb-3 mt-3">Create new Poll</a>
+<form method="get">
+    <input class="w-25" id="searchValue" type="search" name="searchText" placeholder="Search by Poll Title" value="@searchText" />
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<br />
+
+<div class="row" id="songs-cards-row">
+    <partial name="_PollsCardsPartial" />
+</div>
+
+<div class="btn-group mt-2">
+    <div class="mt-2 mb-2">
+        Page size: 4 ->
+    </div>
+    @for (var i = 1; i <= pages + 1; i++)
+    {
+        var currClass = page == i ? "btn-primary" : "btn-outline-primary";
+        <a asp-action="Index"
+           asp-route-page="@i"
+           data-page="@i"
+           class="pager-btn btn @currClass">@(i)</a>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(".pager-btn").click(function (event) {
+            console.log("Pager button clicked");
+            event.preventDefault();
+
+            var page = $(this).data("page");
+
+            var searchTextValue = document.getElementById("searchValue").value == null;
+
+            var ajaxData = {
+                page: page,
+                searchText: document.getElementById("searchValue").value
+            };
+
+            $.ajax({
+                type: "GET",
+                url: "/Poll/Index",
+                data: ajaxData,
+                success: function (data) {
+                    $("#songs-cards-row").html(data);
+
+                    $(".pager-btn").removeClass("btn-primary");
+                    $(".pager-btn").addClass("btn-outline-primary");
+
+                    $(".pager-btn[data-page=" + page + "]").removeClass("btn-outline-primary");
+                    $(".pager-btn[data-page=" + page + "]").addClass("btn-primary");
+                },
+                error: function (data) {
+                    console.error("Ajax GET error", data);
+                }
+            });
+        });
+    </script>
+}
