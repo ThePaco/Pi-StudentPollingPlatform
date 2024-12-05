@@ -55,7 +55,51 @@ namespace WebAPI.Controllers
 
         // GET Search
 
+        [HttpGet("[action]")]
+        public async Task<ActionResult<IEnumerable<PollDto>>> Search(int page, int size, string? orderBy, string? direction, string? filter)
+        {
+            var polls = await _context.Polls.ToListAsync();
+            IEnumerable<Poll> ordered;
+            IEnumerable<Poll> filteredPolls;
 
+            if (filter != null)
+            {
+                filteredPolls = polls.Where(x =>
+                    x.Title.Contains(filter, StringComparison.InvariantCultureIgnoreCase));
+            }
+            else
+            {
+                filteredPolls = polls;
+            }
+
+            if (string.Compare(orderBy, "id", true) == 0)
+            {
+                ordered = filteredPolls.OrderBy(x => x.Id);
+            }
+            else if (string.Compare(orderBy, "title", true) == 0)
+            {
+                ordered = filteredPolls.OrderBy(x => x.Title);
+            }
+            else if (string.Compare(orderBy, "tekst", true) == 0)
+            {
+                ordered = filteredPolls.OrderBy(x => x.Tekst);
+            }
+            else
+            {
+                ordered = filteredPolls.OrderBy(x => x.Id);
+            }
+
+            if (string.Compare(direction, "desc", true) == 0)
+            {
+                ordered = ordered.Reverse();
+            }
+
+
+            var retVal = ordered.Skip((page - 1) * size).Take(size);
+
+
+            return Ok(_mapper.Map<List<PollDto>>(retVal));
+        }
 
         // POST api/<PollController>
         [HttpPost]
