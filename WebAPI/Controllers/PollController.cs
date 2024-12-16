@@ -13,18 +13,35 @@ namespace WebAPI.Controllers
         private readonly IConfiguration _configuration;
         private readonly PiSudentPollingPlatContext _context;
         private readonly IMapper _mapper;
+        private readonly ILogger<PollController> _logger;
 
-        public PollController(IConfiguration configuration, PiSudentPollingPlatContext context, IMapper mapper)
+        public PollController(IConfiguration configuration, PiSudentPollingPlatContext context, IMapper mapper, ILogger<PollController> logger)
         {
             _configuration = configuration;
             _context = context;
             _mapper = mapper;
+            _logger = logger;
+        }
+
+        private async Task LogAsync(string level, string message)
+        {
+            var log = new Log
+            {
+                Timestamp = DateTime.UtcNow,
+                Level = level,
+                Message = message
+            };
+
+            _context.Logs.Add(log);
+            await _context.SaveChangesAsync();
         }
 
         // GET: api/<PollController>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PollDto>>> GetPolls()
         {
+            _logger.LogInformation("Fetching all polls.");
+            await LogAsync("Information", "Fetching all polls.");
             if (_context.Polls == null)
             {
                 return NotFound();
@@ -39,6 +56,8 @@ namespace WebAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<PollDto>> GetPoll(int id)
         {
+            _logger.LogInformation($"Fetching poll with ID: {id}");
+            await LogAsync("Information", $"Fetching poll with ID: {id}");
             if (_context.Polls == null)
             {
                 return NotFound();
@@ -114,6 +133,9 @@ namespace WebAPI.Controllers
             _context.Polls.Add(newPoll);
             await _context.SaveChangesAsync();
 
+            _logger.LogInformation($"Created a new poll with ID: {newPoll.Id}");
+            await LogAsync("Information", $"Created a new poll with ID: {newPoll.Id}");
+
 
             return CreatedAtAction("GetPoll", new { id = newPoll.Id }, _mapper.Map<PollDto>(newPoll));
         }
@@ -125,6 +147,8 @@ namespace WebAPI.Controllers
             Poll poll = _mapper.Map<Poll>(pollDto);
             if (id != poll.Id)
             {
+                _logger.LogWarning($"Poll ID mismatch. Request ID: {id}, Poll ID: {poll.Id}");
+                await LogAsync("Warning", $"Poll ID mismatch. Request ID: {id}, Poll ID: {poll.Id}");
                 return BadRequest();
             }
 
@@ -133,15 +157,21 @@ namespace WebAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                _logger.LogInformation($"Updated poll with ID: {poll.Id}");
+                await LogAsync("Information", $"Updated poll with ID: {poll.Id}");
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!PollExists(id))
                 {
+                    _logger.LogWarning($"Poll with ID {id} not found during update.");
+                    await LogAsync("Warning", $"Poll with ID {id} not found during update.");
                     return NotFound();
                 }
                 else
                 {
+                    _logger.LogError($"Concurrency error while updating poll with ID {id}");
+                    await LogAsync("Error", $"Concurrency error while updating poll with ID {id}");
                     throw;
                 }
             }
@@ -160,7 +190,8 @@ namespace WebAPI.Controllers
             var poll = await _context.Polls.FindAsync(id);
             if (poll == null)
             {
-
+                _logger.LogWarning($"Poll with ID {id} not found during deletion.");
+                await LogAsync("Warning", $"Poll with ID {id} not found during deletion.");
                 return NotFound();
             }
 
@@ -172,8 +203,30 @@ namespace WebAPI.Controllers
 
             _context.Polls.Remove(poll);
             await _context.SaveChangesAsync();
+            _logger.LogInformation($"Deleted poll with ID: {id}");
+            await LogAsync("Information", $"Deleted poll with ID: {id}");
 
             return NoContent();
+        }
+
+        // GET: api/logs/get/N
+        [HttpGet("logs/get/{n?}")]
+        public async Task<ActionResult<IEnumerable<Log>>> GetLogs(int n = 10)
+        {
+            var logs = await _context.Logs
+                .OrderByDescending(l => l.Timestamp)
+                .Take(n)
+                .ToListAsync();
+
+            return Ok(logs);
+        }
+
+        // GET: api/logs/count
+        [HttpGet("logs/count")]
+        public async Task<ActionResult<int>> GetLogCount()
+        {
+            var count = await _context.Logs.CountAsync();
+            return Ok(count);
         }
 
         private bool PollExists(int id)

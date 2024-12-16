@@ -55,7 +55,7 @@ namespace WebAPI.Controllers
         }
 
         // GET Search
-        
+
         [HttpGet("[action]")]
         public async Task<ActionResult<IEnumerable<QuestionDto>>> Search(int page, int size, string? orderBy, string? direction, string? filter)
         {
