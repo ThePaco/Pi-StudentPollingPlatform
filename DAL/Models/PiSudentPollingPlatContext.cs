@@ -25,6 +25,8 @@ public partial class PiSudentPollingPlatContext : DbContext
 
     public virtual DbSet<UserAnswer> UserAnswers { get; set; }
 
+    public virtual DbSet<Log> Logs { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("server=.;Database=piSudentPollingPlat;User=sa;Password=SQL;TrustServerCertificate=True;MultipleActiveResultSets=true");
