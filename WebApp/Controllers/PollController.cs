@@ -20,41 +20,40 @@ namespace WebApp.Controllers
             _mapper = mapper;
         }
         // GET: PollController
-
         public async Task<IActionResult> Index(int? page, string? searchText)
- {
-     int pageSize = 4;
-     int pageNumber = page ?? 1;
-     ViewData["pages"] = pageNumber;
-     List<Poll> piSudentPollingPlatContextPaged = null;
-     if (searchText != null)
-     {
-         piSudentPollingPlatContextPaged =
-             await _context.Polls
-             .Where(p => p.Title.Contains(searchText))
-             .OrderBy(p => p.Title)
-             .ToListAsync();
+        {
+            int pageSize = 4;
+            int pageNumber = page ?? 1;
+            ViewData["pages"] = pageNumber;
+            List<Poll> piSudentPollingPlatContextPaged = null;
+            if (searchText != null)
+            {
+                piSudentPollingPlatContextPaged =
+                    await _context.Polls
+                    .Where(p => p.Title.Contains(searchText))
+                    .OrderBy(p => p.Title)
+                    .ToListAsync();
 
 
 
-         ViewData["pages"] = piSudentPollingPlatContextPaged.Count() / pageSize;
-         CookieOptions options = new CookieOptions();
-         options.Expires = DateTime.Now.AddDays(7);
-         Response.Cookies.Append("SearchText", searchText, options);
-         ViewData["page"] = page;
+                ViewData["pages"] = piSudentPollingPlatContextPaged.Count() / pageSize;
+                CookieOptions options = new CookieOptions();
+                options.Expires = DateTime.Now.AddDays(7);
+                Response.Cookies.Append("SearchText", searchText, options);
+                ViewData["page"] = page;
 
-         return View(piSudentPollingPlatContextPaged.ToPagedList(pageNumber, pageSize));
-     }
-     piSudentPollingPlatContextPaged =
-         await _context.Polls
-         .OrderBy(p => p.Title)
-         .ToListAsync();
+                return View(piSudentPollingPlatContextPaged.ToPagedList(pageNumber, pageSize));
+            }
+            piSudentPollingPlatContextPaged =
+                await _context.Polls
+                .OrderBy(p => p.Title)
+                .ToListAsync();
 
-     Response.Cookies.Delete("SearchText");
-     ViewData["pages"] = piSudentPollingPlatContextPaged.Count() / pageSize;
-     ViewData["page"] = page;
-     return View(piSudentPollingPlatContextPaged.ToPagedList(pageNumber, pageSize));
- }
+            Response.Cookies.Delete("SearchText");
+            ViewData["pages"] = piSudentPollingPlatContextPaged.Count() / pageSize;
+            ViewData["page"] = page;
+            return View(piSudentPollingPlatContextPaged.ToPagedList(pageNumber, pageSize));
+        }
 
         // GET: PollController/Details/5
         public ActionResult Details(int id)
@@ -128,21 +127,42 @@ namespace WebApp.Controllers
         // GET: PollController/Delete/5
         public ActionResult Delete(int id)
         {
-            return View();
+            try
+            {
+                var poll = _context.Polls.FirstOrDefault(x => x.Id == id);
+                var pollVM = new VMPoll
+                {
+                    Id = poll.Id,
+                    Title = poll.Title,
+                    Tekst = poll.Tekst,
+
+                };
+
+                return View(pollVM);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         // POST: PollController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public ActionResult Delete(int id, VMPoll poll)
         {
             try
             {
+                var dbPoll = _context.Polls.FirstOrDefault(x => x.Id == id);
+
+                _context.Polls.Remove(dbPoll);
+
+                _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                throw ex;
             }
         }
     }

@@ -1,83 +1,67 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using DAL.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WebApp.ViewModels;
 
 namespace WebApp.Controllers
 {
     public class ProfileController : Controller
     {
-        // GET: ProfileController
-        public ActionResult Index()
+
+        private readonly PiSudentPollingPlatContext _context;
+
+
+        public ProfileController(PiSudentPollingPlatContext context)
         {
-            return View();
+            _context = context;
         }
 
-        // GET: ProfileController/Details/5
-        public ActionResult Details(int id)
+        [HttpGet]
+        public IActionResult Index()
         {
-            return View();
+            var username = HttpContext.User.Identity.Name;
+
+            var userDb = _context.Users.FirstOrDefault(x => x.Username == username);
+            if (userDb == null)
+            {
+                return NotFound();
+            }
+
+            var userProfile = new VMUser
+            {
+                Id = userDb.Id,
+                Username = userDb.Username,
+                Email = userDb.Email,
+                FirstName = userDb.FirstName,
+                LastName = userDb.LastName,
+
+            };
+
+            return View(userProfile);
         }
 
-        // GET: ProfileController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: ProfileController/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public JsonResult UpdateProfile([FromBody] VMUser model)
         {
-            try
+            if (ModelState.IsValid)
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+                var userDb = _context.Users.FirstOrDefault(x => x.Id == model.Id);
+                if (userDb == null)
+                {
+                    return Json(new { success = false, message = "User not found." });
+                }
 
-        // GET: ProfileController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
+                // Ažuriranje korisničkih podataka
+                userDb.FirstName = model.FirstName;
+                userDb.LastName = model.LastName;
+                userDb.Email = model.Email;
 
-        // POST: ProfileController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
 
-        // GET: ProfileController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
+                _context.SaveChanges();
+                return Json(new { success = true, message = "Profile updated successfully!" });
+            }
 
-        // POST: ProfileController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            return Json(new { success = false, message = "Invalid input data." });
         }
     }
 }
