@@ -133,8 +133,8 @@ CREATE TABLE [dbo].[User](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Log]    Script Date: 4.12.2024. 19:04:37 ******/
-CREATE TABLE [dbo].[Log](
+/****** Object:  Table [dbo].[Logs]    Script Date: 4.12.2024. 19:04:37 ******/
+CREATE TABLE [dbo].[Logs](
     [Id] [int] IDENTITY(1,1) NOT NULL,
     [Timestamp] [datetime2](7) NOT NULL,
     [Level] [nvarchar](50) NULL,
