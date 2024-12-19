@@ -133,6 +133,29 @@ CREATE TABLE [dbo].[User](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+/****** Object:  Table [dbo].[Log]    Script Date: 4.12.2024. 19:04:37 ******/
+CREATE TABLE [dbo].[Log](
+    [Id] [int] IDENTITY(1,1) NOT NULL,
+    [Timestamp] [datetime2](7) NOT NULL,
+    [Level] [nvarchar](50) NULL,
+	[Message] [nvarchar](max)  NULL
+)
+GO
+
+
+/****** Object:  Table [dbo].[Kolegij]    Script Date: 4.12.2024. 19:04:37 ******/
+CREATE TABLE [dbo].[Kolegij](
+IDKolegij int primary key identity,
+KolegijName nvarchar(200)
+)
+
+ALTER TABLE [dbo].[Poll]
+ADD PollDate datetime;
+
+ALTER TABLE [dbo].[Poll]
+ADD KolegijID int foreign key references Kolegij(IDKolegij)
+
+GO
 /****** Object:  Table [dbo].[UserAnswer]    Script Date: 4.12.2024. 19:04:37 ******/
 SET ANSI_NULLS ON
 GO
