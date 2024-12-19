@@ -11,5 +11,11 @@ public partial class Poll
 
     public string Tekst { get; set; } = null!;
 
+    public DateTime? PollDate { get; set; }
+
+    public int? KolegijId { get; set; }
+
+    public virtual Kolegij? Kolegij { get; set; }
+
     public virtual ICollection<Question> Questions { get; set; } = new List<Question>();
 }
