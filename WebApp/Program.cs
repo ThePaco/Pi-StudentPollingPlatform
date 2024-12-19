@@ -12,7 +12,7 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddDbContext<PiSudentPollingPlatContext>(options =>
 {
-    options.UseSqlServer("name=ConnectionStrings:DefaultConnectionString");
+    options.UseSqlServer("name=ConnectionStrings:AppConnStr");
 });
 builder.Services.Configure<ApiBehaviorOptions>(options => {
     options.SuppressModelStateInvalidFilter = true;
