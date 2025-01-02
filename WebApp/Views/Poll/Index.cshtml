@@ -5,28 +5,51 @@
 @{
     ViewData["Title"] = "Index";
     string searchText = HttpContextAccessor.HttpContext.Request.Cookies["SearchText"];
-    var SongsItems = Model;
     var page = (int?)ViewData["page"];
     var pages = (int?)ViewData["pages"];
 }
 
 <h1>Polls</h1>
 <a asp-action="Create" class="btn btn-primary mb-3 mt-3">Create new Poll</a>
+
+<!-- Search Form -->
 <form method="get">
     <input class="w-25" id="searchValue" type="search" name="searchText" placeholder="Search by Poll Title" value="@searchText" />
     <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
-<br />
-
-<div class="row" id="songs-cards-row">
-    <partial name="_PollsCardsPartial" />
+<!-- Sorting Options -->
+<div class="mt-3">
+    <span>Sort by: </span>
+    <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]" class="btn btn-secondary">Date</a>
 </div>
 
+<div class="row" id="songs-cards-row">
+    @foreach (var poll in Model)
+    {
+        <div class="col-md-3">
+            <div class="card mb-3 h-100">
+                <div class="card-body">
+                    <h5 class="card-title">@poll.Title</h5>
+                    <p class="card-text">@poll.Tekst</p>
+                    <p class="card-text"><small class="text-muted">Date: @poll.PollDate?.ToString("yyyy-MM-dd")</small></p>
+                    <p class="card-text"><small class="text-muted">Kolegij: @(poll.Kolegij?.KolegijName ?? "None")</small></p>
+                </div>
+                <div class="card-footer">
+                    <a asp-action="Details" asp-route-id="@poll.Id" class="btn btn-primary">Details</a>
+                    <a asp-action="Edit" asp-route-id="@poll.Id" class="btn btn-secondary">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@poll.Id" class="btn btn-danger">Delete</a>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+</div>
+
+<!-- Pagination -->
 <div class="btn-group mt-2">
-    <div class="mt-2 mb-2">
-        Page size: 4 ->
-    </div>
+    <div class="mt-2 mb-2">Page size: 4 -></div>
     @for (var i = 1; i <= pages + 1; i++)
     {
         var currClass = page == i ? "btn-primary" : "btn-outline-primary";
@@ -44,8 +67,6 @@
             event.preventDefault();
 
             var page = $(this).data("page");
-
-            var searchTextValue = document.getElementById("searchValue").value == null;
 
             var ajaxData = {
                 page: page,

@@ -11,23 +11,33 @@
     <div class="col-md-4">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
             <div class="form-group">
                 <label asp-for="Title" class="control-label"></label>
                 <input asp-for="Title" class="form-control" />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
+
             <div class="form-group">
-                <label asp-for="Tekst" class="control-label"></label>
-                <input asp-for="Tekst" class="form-control" />
-                <span asp-validation-for="Tekst" class="text-danger"></span>
+                <label asp-for="Content" class="control-label"></label>
+                <input asp-for="Content" class="form-control" />
+                <span asp-validation-for="Content" class="text-danger"></span>
             </div>
-            @*<div class="form-group">
-                <label asp-for="PerformerId" class="control-label"></label>
-                <select asp-for="PerformerId" asp-items="ViewBag.PerformerDdlItems" class="form-select">
-                    <option value="">(not selected)</option>
+
+            <div class="form-group">
+                <label asp-for="PollDate" class="control-label"></label>
+                <input asp-for="PollDate" class="form-control" type="date" />
+                <span asp-validation-for="PollDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="KolegijId" class="control-label"></label>
+                <select asp-for="KolegijId" asp-items="ViewBag.Kolegiji" class="form-control">
+                    <option value="">Select Kolegij</option>
                 </select>
-                <span asp-validation-for="PerformerId" class="text-danger"></span>
-            </div>*@
+                <span asp-validation-for="KolegijId" class="text-danger"></span>
+            </div>
+
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
@@ -40,7 +50,5 @@
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @await Html.PartialAsync("_ValidationScriptsPartial")
 }

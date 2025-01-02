@@ -19,51 +19,75 @@ namespace WebApp.Controllers
             _context = context;
             _mapper = mapper;
         }
+
+
         // GET: PollController
-        public async Task<IActionResult> Index(int? page, string? searchText)
+        public async Task<IActionResult> Index(int? page, string? searchText, string? sortOrder)
         {
             int pageSize = 4;
             int pageNumber = page ?? 1;
-            ViewData["pages"] = pageNumber;
-            List<Poll> piSudentPollingPlatContextPaged = null;
-            if (searchText != null)
+            ViewData["CurrentSort"] = sortOrder; 
+            ViewData["DateSortParm"] = String.IsNullOrEmpty(sortOrder) ? "date_desc" : "";
+
+            
+            IQueryable<Poll> pollsQuery = _context.Polls.Include(p => p.Kolegij);
+
+            if (!string.IsNullOrEmpty(searchText))
             {
-                piSudentPollingPlatContextPaged =
-                    await _context.Polls
-                    .Where(p => p.Title.Contains(searchText))
-                    .OrderBy(p => p.Title)
-                    .ToListAsync();
-
-
-
-                ViewData["pages"] = piSudentPollingPlatContextPaged.Count() / pageSize;
-                CookieOptions options = new CookieOptions();
-                options.Expires = DateTime.Now.AddDays(7);
-                Response.Cookies.Append("SearchText", searchText, options);
-                ViewData["page"] = page;
-
-                return View(piSudentPollingPlatContextPaged.ToPagedList(pageNumber, pageSize));
+                
+                pollsQuery = pollsQuery.Where(p =>
+                    p.Title.Contains(searchText) ||
+                    (p.Kolegij != null && p.Kolegij.KolegijName.Contains(searchText))
+                );
             }
-            piSudentPollingPlatContextPaged =
-                await _context.Polls
-                .OrderBy(p => p.Title)
-                .ToListAsync();
 
-            Response.Cookies.Delete("SearchText");
-            ViewData["pages"] = piSudentPollingPlatContextPaged.Count() / pageSize;
+            
+            switch (sortOrder)
+            {
+                case "date_desc":
+                    pollsQuery = pollsQuery.OrderByDescending(p => p.PollDate);
+                    break;
+                default:
+                    pollsQuery = pollsQuery.OrderBy(p => p.PollDate);
+                    break;
+            }
+
+            var polls = await pollsQuery.ToListAsync();
+
+            ViewData["pages"] = polls.Count / pageSize;
+            Response.Cookies.Append("SearchText", searchText ?? "", new CookieOptions { Expires = DateTime.Now.AddDays(7) });
             ViewData["page"] = page;
-            return View(piSudentPollingPlatContextPaged.ToPagedList(pageNumber, pageSize));
+
+            return View(polls.ToPagedList(pageNumber, pageSize));
         }
 
         // GET: PollController/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            try
+            {
+                var poll = _context.Polls.FirstOrDefault(x => x.Id == id);
+                var pollVM = new VMPoll
+                {
+                    Id = poll.Id,
+                    Title = poll.Title,
+                    Tekst = poll.Tekst,
+                    PollDate = poll.PollDate,
+                    KolegijId = poll.KolegijId
+                };
+
+                return View(pollVM);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         // GET: PollController/Create
         public ActionResult Create()
         {
+            ViewBag.Users = new SelectList(_context.Users, "Id", "Username");
             return View();
         }
 
@@ -73,32 +97,34 @@ namespace WebApp.Controllers
         public async Task<ActionResult> Create(VMPoll poll)
         {
             try
-            { 
+            {
                 if (!ModelState.IsValid)
                 {
-
-
-                    return View();
+                    // Repopulate ViewBag if validation fails
+                    ViewBag.Kolegiji = new SelectList(_context.Kolegijs, "Idkolegij", "KolegijName");
+                    return View(poll);
                 }
-            var existingPoll = await _context.Polls.FirstOrDefaultAsync(p => p.Title == poll.Title);
 
-            if (existingPoll != null)
-            {
-                ModelState.AddModelError("Name", "A poll with the same title already exists.");
-                return View(poll);
-            }
+                var existingPoll = await _context.Polls.FirstOrDefaultAsync(p => p.Title == poll.Title);
+                if (existingPoll != null)
+                {
+                    ModelState.AddModelError("Name", "A poll with the same title already exists.");
+                    ViewBag.Kolegiji = new SelectList(_context.Kolegijs, "Idkolegij", "KolegijName");
+                    return View(poll);
+                }
 
-
+                // Map KolegijId and PollDate
                 var newPoll = _mapper.Map<Poll>(poll);
+                newPoll.PollDate = poll.PollDate;
+                newPoll.KolegijId = poll.KolegijId;
+
                 _context.Polls.Add(newPoll);
                 await _context.SaveChangesAsync();
 
                 return RedirectToAction(nameof(Index));
-
-            }   
+            }
             catch (Exception ex)
             {
-
                 throw ex;
             }
         }
@@ -112,10 +138,21 @@ namespace WebApp.Controllers
         // POST: PollController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public ActionResult Edit(int id, VMPoll poll)
         {
             try
             {
+                var dbPoll = _context.Polls.FirstOrDefault(x => x.Id == id);
+                dbPoll.Id = poll.Id;
+                dbPoll.Title = poll.Title;
+                dbPoll.Tekst = poll.Tekst;
+                dbPoll.PollDate = poll.PollDate;
+                dbPoll.KolegijId = poll.KolegijId;
+
+
+                _context.SaveChanges();
+
+
                 return RedirectToAction(nameof(Index));
             }
             catch
