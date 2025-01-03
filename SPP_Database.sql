@@ -156,6 +156,21 @@ ALTER TABLE [dbo].[Poll]
 ADD KolegijID int foreign key references Kolegij(IDKolegij)
 
 GO
+
+	
+/****** Object:  Table [dbo].[Studij]    Script Date: 4.12.2024. 19:04:37 ******/,
+
+CREATE TABLE [dbo].[Studij]
+(
+    [IDStudij] INT PRIMARY KEY IDENTITY,
+    [StudijName] NVARCHAR(200)
+);
+
+ALTER TABLE [dbo].[Poll]
+ADD [StudijID] INT FOREIGN KEY REFERENCES [dbo].[Studij]([IDStudij])
+
+GO
+
 /****** Object:  Table [dbo].[UserAnswer]    Script Date: 4.12.2024. 19:04:37 ******/
 SET ANSI_NULLS ON
 GO
