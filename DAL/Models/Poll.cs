@@ -15,7 +15,11 @@ public partial class Poll
 
     public int? KolegijId { get; set; }
 
+    public int? StudijId { get; set; }
+
     public virtual Kolegij? Kolegij { get; set; }
 
     public virtual ICollection<Question> Questions { get; set; } = new List<Question>();
+
+    public virtual Studij? Studij { get; set; }
 }

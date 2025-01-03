@@ -25,12 +25,15 @@ public partial class PiSudentPollingPlatContext : DbContext
 
     public virtual DbSet<Role> Roles { get; set; }
 
+    public virtual DbSet<Studij> Studijs { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserAnswer> UserAnswers { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("name=ConnectionStrings:AppConnStr");
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("server=.;Database=piSudentPollingPlat;User=sa;Password=SQL;TrustServerCertificate=True;MultipleActiveResultSets=true");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -59,12 +62,17 @@ public partial class PiSudentPollingPlatContext : DbContext
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.KolegijId).HasColumnName("KolegijID");
             entity.Property(e => e.PollDate).HasColumnType("datetime");
+            entity.Property(e => e.StudijId).HasColumnName("StudijID");
             entity.Property(e => e.Tekst).HasMaxLength(255);
             entity.Property(e => e.Title).HasMaxLength(50);
 
             entity.HasOne(d => d.Kolegij).WithMany(p => p.Polls)
                 .HasForeignKey(d => d.KolegijId)
                 .HasConstraintName("FK__Poll__KolegijID__5DCAEF64");
+
+            entity.HasOne(d => d.Studij).WithMany(p => p.Polls)
+                .HasForeignKey(d => d.StudijId)
+                .HasConstraintName("FK__Poll__StudijID__6FE99F9F");
         });
 
         modelBuilder.Entity<Question>(entity =>
@@ -87,6 +95,16 @@ public partial class PiSudentPollingPlatContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.Name).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<Studij>(entity =>
+        {
+            entity.HasKey(e => e.Idstudij).HasName("PK__Studij__AF61E22F8180126F");
+
+            entity.ToTable("Studij");
+
+            entity.Property(e => e.Idstudij).HasColumnName("IDStudij");
+            entity.Property(e => e.StudijName).HasMaxLength(200);
         });
 
         modelBuilder.Entity<User>(entity =>
