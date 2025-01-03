@@ -22,6 +22,10 @@ namespace WebApp.ViewModels
 
         [DisplayName("Kolegij")]
         [Required(ErrorMessage = "Please select a Kolegij")]
-        public int? KolegijId { get; set; } 
+        public int? KolegijId { get; set; }
+
+        [DisplayName("Studij")]
+        [Required(ErrorMessage = "Please select a Studij")]
+        public int? StudijId { get; set; }
     }
 }
