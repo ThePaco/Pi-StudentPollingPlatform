@@ -158,7 +158,7 @@ ADD KolegijID int foreign key references Kolegij(IDKolegij)
 GO
 
 	
-/****** Object:  Table [dbo].[Studij]    Script Date: 4.12.2024. 19:04:37 ******/,
+/****** Object:  Table [dbo].[Studij]    Script Date: 4.12.2024. 19:04:37 ******/
 
 CREATE TABLE [dbo].[Studij]
 (
