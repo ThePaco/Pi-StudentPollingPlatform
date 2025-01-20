@@ -1,4 +1,4 @@
-﻿@model WebApp.ViewModels.VMPoll
+﻿@model WebApp.ViewModels.VMQuestion
 
 @{
     ViewData["Title"] = "Delete";
@@ -10,29 +10,16 @@
     <hr />
     <dl class="row">
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-
-        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Tekst)
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Tekst)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.PollDate)
+            @Html.DisplayNameFor(model => model.PollId)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.PollDate)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.GodinaId)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.GodinaId)
+            @Html.DisplayFor(model => model.PollId)
         </dd>
     </dl>
 

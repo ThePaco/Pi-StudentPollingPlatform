@@ -19,6 +19,10 @@
             <label for="LastName">Last Name</label>
             <input type="text" class="form-control" id="LastName" value="@Model.LastName" required />
         </div>
+        <div class="form-group">
+            <label for="Password">Password</label>
+            <input type="text" class="form-control" id="Password" value="@Model.Password" required />
+        </div>
         <button type="button" class="btn btn-primary" onclick="updateProfile()">Update Profile</button>
     </form>
 
@@ -34,6 +38,7 @@
             Email: $('#Email').val(),
             FirstName: $('#FirstName').val(),
             LastName: $('#LastName').val(),
+            Password: $('#Password').val(),
         };
 
         $.ajax({

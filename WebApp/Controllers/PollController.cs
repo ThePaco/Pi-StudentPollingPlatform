@@ -20,27 +20,43 @@ namespace WebApp.Controllers
             _mapper = mapper;
         }
 
-
         // GET: PollController
-        public async Task<IActionResult> Index(int? page, string? searchText, string? sortOrder)
+        public async Task<IActionResult> Index(int? page, string? searchText, string? sortOrder, int? godinaFilter, int? studijFilter, int? kolegijFilter)
         {
             int pageSize = 4;
             int pageNumber = page ?? 1;
             ViewData["CurrentSort"] = sortOrder;
-            ViewData["DateSortParm"] = String.IsNullOrEmpty(sortOrder) ? "date_desc" : ""; 
+            ViewData["DateSortParm"] = string.IsNullOrEmpty(sortOrder) ? "date_desc" : "";
 
-
+            // Include related data
             IQueryable<Poll> pollsQuery = _context.Polls
                 .Include(p => p.Kolegij)
-                .Include(p => p.Studij);
+                .Include(p => p.Studij)
+                .Include(p => p.Godina);
 
+            // Apply search filter
             if (!string.IsNullOrEmpty(searchText))
             {
                 pollsQuery = pollsQuery.Where(p =>
                     p.Title.Contains(searchText) ||
                     (p.Kolegij != null && p.Kolegij.KolegijName.Contains(searchText)) ||
-                    (p.Studij != null && p.Studij.StudijName.Contains(searchText))
+                    (p.Studij != null && p.Studij.StudijName.Contains(searchText)) ||
+                    (p.Godina != null && p.Godina.BrojGodine.ToString().Contains(searchText))
                 );
+            }
+
+            // Apply filters
+            if (godinaFilter.HasValue)
+            {
+                pollsQuery = pollsQuery.Where(p => p.GodinaId == godinaFilter);
+            }
+            if (studijFilter.HasValue)
+            {
+                pollsQuery = pollsQuery.Where(p => p.StudijId == studijFilter);
+            }
+            if (kolegijFilter.HasValue)
+            {
+                pollsQuery = pollsQuery.Where(p => p.KolegijId == kolegijFilter);
             }
 
             // Apply sorting
@@ -56,6 +72,11 @@ namespace WebApp.Controllers
 
             var polls = await pollsQuery.ToListAsync();
 
+            // Populate ViewBag for filters
+            ViewBag.Godine = new SelectList(await _context.Godinas.ToListAsync(), "Idgodina", "BrojGodine");
+            ViewBag.Studiji = new SelectList(await _context.Studijs.ToListAsync(), "Idstudij", "StudijName");
+            ViewBag.Kolegiji = new SelectList(await _context.Kolegijs.ToListAsync(), "Idkolegij", "KolegijName");
+
             ViewData["pages"] = polls.Count / pageSize;
             Response.Cookies.Append("SearchText", searchText ?? "", new CookieOptions { Expires = DateTime.Now.AddDays(7) });
             ViewData["page"] = page;
@@ -63,35 +84,12 @@ namespace WebApp.Controllers
             return View(polls.ToPagedList(pageNumber, pageSize));
         }
 
-        // GET: PollController/Details/5
-        public ActionResult Details(int id)
-        {
-            try
-            {
-                var poll = _context.Polls.FirstOrDefault(x => x.Id == id);
-                var pollVM = new VMPoll
-                {
-                    Id = poll.Id,
-                    Title = poll.Title,
-                    Tekst = poll.Tekst,
-                    PollDate = poll.PollDate,
-                    KolegijId = poll.KolegijId,
-                    StudijId = poll.StudijId
-                };
-
-                return View(pollVM);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
         // GET: PollController/Create
         public ActionResult Create()
         {
             ViewBag.Kolegiji = new SelectList(_context.Kolegijs, "Idkolegij", "KolegijName");
             ViewBag.Studiji = new SelectList(_context.Studijs, "Idstudij", "StudijName");
+            ViewBag.Godine = new SelectList(_context.Godinas, "Idgodina", "BrojGodine"); // Populate Godina dropdown
             return View();
         }
 
@@ -106,6 +104,7 @@ namespace WebApp.Controllers
                 {
                     ViewBag.Kolegiji = new SelectList(_context.Kolegijs, "Idkolegij", "KolegijName");
                     ViewBag.Studiji = new SelectList(_context.Studijs, "Idstudij", "StudijName");
+                    ViewBag.Godine = new SelectList(_context.Godinas, "Idgodina", "BrojGodine");
                     return View(poll);
                 }
 
@@ -115,14 +114,15 @@ namespace WebApp.Controllers
                     ModelState.AddModelError("Name", "A poll with the same title already exists.");
                     ViewBag.Kolegiji = new SelectList(_context.Kolegijs, "Idkolegij", "KolegijName");
                     ViewBag.Studiji = new SelectList(_context.Studijs, "Idstudij", "StudijName");
+                    ViewBag.Godine = new SelectList(_context.Godinas, "Idgodina", "BrojGodine");
                     return View(poll);
                 }
-
 
                 var newPoll = _mapper.Map<Poll>(poll);
                 newPoll.PollDate = poll.PollDate;
                 newPoll.KolegijId = poll.KolegijId;
                 newPoll.StudijId = poll.StudijId;
+                newPoll.GodinaId = poll.GodinaId;
 
                 _context.Polls.Add(newPoll);
                 await _context.SaveChangesAsync();
@@ -136,81 +136,23 @@ namespace WebApp.Controllers
         }
 
         // GET: PollController/Edit/5
-        public async Task<IActionResult> Edit(int id)
+        public ActionResult Edit(int id)
         {
-
-            var poll = await _context.Polls.FirstOrDefaultAsync(x => x.Id == id);
-            if (poll == null)
-            {
-                return NotFound();
-            }
-
-            var pollVM = new VMPoll
-            {
-                Id = poll.Id,
-                Title = poll.Title,
-                Tekst = poll.Tekst,
-                PollDate = poll.PollDate,
-                KolegijId = poll.KolegijId,
-                StudijId = poll.StudijId
-            };
-
-            ViewBag.Kolegiji = new SelectList(_context.Kolegijs, "Idkolegij", "KolegijName", poll.KolegijId);
-            ViewBag.Studiji = new SelectList(_context.Studijs, "Idstudij", "StudijName", poll.StudijId);
-
-            return View(pollVM);
+            return View();
         }
 
         // POST: PollController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, VMPoll pollVM)
+        public ActionResult Edit(int id, IFormCollection collection)
         {
-            if (id != pollVM.Id)
-            {
-                return BadRequest();
-            }
-
-            if (!ModelState.IsValid)
-            {
-                ViewBag.Kolegiji = new SelectList(_context.Kolegijs, "Idkolegij", "KolegijName", pollVM.KolegijId);
-                ViewBag.Studiji = new SelectList(_context.Studijs, "Idstudij", "StudijName", pollVM.StudijId);
-                return View(pollVM);
-            }
-
-            var existingPoll = await _context.Polls.FirstOrDefaultAsync(p => p.Id != pollVM.Id && p.Title == pollVM.Title);
-            if (existingPoll != null)
-            {
-                ModelState.AddModelError("Title", "A poll with the same title already exists.");
-                ViewBag.Kolegiji = new SelectList(_context.Kolegijs, "Idkolegij", "KolegijName", pollVM.KolegijId);
-                ViewBag.Studiji = new SelectList(_context.Studijs, "Idstudij", "StudijName", pollVM.StudijId);
-                return View(pollVM);
-            }
-
-            var poll = await _context.Polls.FirstOrDefaultAsync(x => x.Id == id);
-            if (poll == null)
-            {
-                return NotFound();
-            }
-
-            poll.Title = pollVM.Title;
-            poll.Tekst = pollVM.Tekst;
-            poll.PollDate = pollVM.PollDate;
-            poll.KolegijId = pollVM.KolegijId;
-            poll.StudijId = pollVM.StudijId;
-
             try
             {
-                _context.Update(poll);
-                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            catch (DbUpdateException)
+            catch
             {
-                ModelState.AddModelError(string.Empty, "An error occurred while updating the poll. Please try again.");
-                ViewBag.Kolegiji = new SelectList(_context.Kolegijs, "Idkolegij", "KolegijName", pollVM.KolegijId);
-                ViewBag.Studiji = new SelectList(_context.Studijs, "Idstudij", "StudijName", pollVM.StudijId);
-                return View(pollVM);
+                return View();
             }
         }
 
@@ -225,7 +167,6 @@ namespace WebApp.Controllers
                     Id = poll.Id,
                     Title = poll.Title,
                     Tekst = poll.Tekst,
-
                 };
 
                 return View(pollVM);
@@ -244,9 +185,7 @@ namespace WebApp.Controllers
             try
             {
                 var dbPoll = _context.Polls.FirstOrDefault(x => x.Id == id);
-
                 _context.Polls.Remove(dbPoll);
-
                 _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }

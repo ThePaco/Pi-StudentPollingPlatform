@@ -1,4 +1,3 @@
-using WebApp.Models;
 using WebApp.ViewModels;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
@@ -7,6 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using static NuGet.Protocol.Core.Types.Repository;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
+using DAL.Models;
+using WebApp.Models;
 
 
 
@@ -16,9 +18,12 @@ namespace WebApp.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        private readonly PiSudentPollingPlatContext _context;
+
+        public HomeController(ILogger<HomeController> logger, PiSudentPollingPlatContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
         public IActionResult Index()
@@ -81,14 +86,15 @@ namespace WebApp.Controllers
 
         }
 
-        private static bool Authenticate(string username, string password)
+        private bool Authenticate(string name, string pass)
         {
-            const string administrator = "Admin";
-            const string adminPass = "AdminPass";
-            if (username.Equals(administrator) && password.Equals(adminPass))
+            var username = _context.Users.FirstOrDefault(x => x.Username == name && x.Password == pass);
+
+            if (username != null)
             {
                 return true;
             }
+
             return false;
         }
         [HttpPost]

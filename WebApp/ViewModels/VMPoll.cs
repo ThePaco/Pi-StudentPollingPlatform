@@ -18,14 +18,18 @@ namespace WebApp.ViewModels
         [DisplayName("Poll Date")]
         [Required(ErrorMessage = "Poll date is required")]
         [DataType(DataType.Date)]
-        public DateTime? PollDate { get; set; }
+        public DateTime PollDate { get; set; }
 
         [DisplayName("Kolegij")]
-        [Required(ErrorMessage = "Please select a Kolegij")]
-        public int? KolegijId { get; set; }
+        [Required(ErrorMessage = "Odaberite kolegij")]
+        public int KolegijId { get; set; }
 
         [DisplayName("Studij")]
-        [Required(ErrorMessage = "Please select a Studij")]
-        public int? StudijId { get; set; }
+        [Required(ErrorMessage = "Odaberite studij")]
+        public int StudijId { get; set; }
+
+        [DisplayName("Godina Studija")]
+        [Required(ErrorMessage = "Odaberite godinu studija")]
+        public int GodinaId { get; set; }
     }
 }

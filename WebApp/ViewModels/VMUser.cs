@@ -27,5 +27,9 @@ namespace WebApp.ViewModels
         [Required, EmailAddress(ErrorMessage = "User Email adress is required")]
         public string Email { get; set; } = null!;
 
+        [DisplayName("Password")]
+        [Required(ErrorMessage = "Password is required")]
+        public string Password { get; set; } = null!;
+
     }
 }

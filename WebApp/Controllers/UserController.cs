@@ -29,6 +29,7 @@ namespace WebApp.Controllers
                 FirstName = userDb.FirstName,
                 LastName = userDb.LastName,
                 Email = userDb.Email,
+                Password = userDb.Password,
 
             };
 
@@ -45,6 +46,7 @@ namespace WebApp.Controllers
                 FirstName = userDb.FirstName,
                 LastName = userDb.LastName,
                 Email = userDb.Email,
+                Password = userDb.Password,
 
             };
 
@@ -58,6 +60,7 @@ namespace WebApp.Controllers
             userDb.FirstName = userVm.FirstName;
             userDb.LastName = userVm.LastName;
             userDb.Email = userVm.Email;
+            userDb.Password = userVm.Password;
 
 
             _context.SaveChanges();
@@ -147,6 +150,7 @@ namespace WebApp.Controllers
                 userDb.FirstName,
                 userDb.LastName,
                 userDb.Email,
+                userDb.Password
 
             });
         }
@@ -159,6 +163,7 @@ namespace WebApp.Controllers
             userDb.FirstName = userVm.FirstName;
             userDb.LastName = userVm.LastName;
             userDb.Email = userVm.Email;
+            userDb.Password = userVm.Password;
 
 
             _context.SaveChanges();

@@ -33,6 +33,12 @@
         <dd class="col-sm-10" id="Email">
             @Html.DisplayFor(model => model.Email)
         </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Password)
+        </dt>
+        <dd class="col-sm-10" id="Email">
+            @Html.DisplayFor(model => model.Password)
+        </dd>
     </dl>
 </div>
 <div>
@@ -69,6 +75,10 @@
                         <label for="EmailInput" class="form-label">E-mail</label>
                         <input type="email" id="EmailInput" class="form-control">
                     </div>
+                    <div class="mb-3">
+                        <label for="PasswordInput" class="form-label">Password</label>
+                        <input id="PasswordInput" class="form-control">
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -97,6 +107,7 @@
                     $("#FirstName").text(data.firstName);
                     $("#LastName").text(data.lastName);
                     $("#Email").text(data.email);
+                    $("#Password").text(data.password);
                 });
         }
 
@@ -113,10 +124,12 @@
             const firstName = $("#FirstName").text().trim();
             const lastName = $("#LastName").text().trim();
             const email = $("#Email").text().trim();
+            const password = $("#Password").text().trim();
 
             $("#FirstNameInput").val(firstName);
             $("#LastNameInput").val(lastName);
             $("#EmailInput").val(email);
+            $("#PasswordInput").val(password);
             ajaxEditModal.show();
         });
 
@@ -125,6 +138,7 @@
                 firstName: $("#FirstNameInput").val(),
                 lastName: $("#LastNameInput").val(),
                 email: $("#EmailInput").val(),
+                password: $("#PasswordInput").val(),
             };
             $.ajax({
                 url: `/User/SetProfileData/${modelId}`,
