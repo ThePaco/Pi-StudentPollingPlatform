@@ -123,8 +123,7 @@ CREATE TABLE [dbo].[User](
 	[Username] [nvarchar](50) NOT NULL,
 	[FirstName] [nvarchar](50) NOT NULL,
 	[LastName] [nvarchar](50) NOT NULL,
-	[PwdHash] [nvarchar](256) NOT NULL, 
-    	[PwdSalt] [nvarchar](256) NOT NULL, 
+	[Password] [nvarchar](256) NOT NULL, 
 	[Email] [nvarchar](50) NOT NULL,
 	[RoleID] [int] NOT NULL,
  CONSTRAINT [PK_User] PRIMARY KEY CLUSTERED 
