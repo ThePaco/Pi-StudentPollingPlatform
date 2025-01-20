@@ -170,6 +170,18 @@ ADD [StudijID] INT FOREIGN KEY REFERENCES [dbo].[Studij]([IDStudij])
 
 GO
 
+/****** Object:  Table [dbo].[Godina]    Script Date: 4.12.2024. 19:04:37 ******/
+
+
+CREATE TABLE [dbo].[Godina]
+(
+	IDGodina INT PRIMARY KEY IDENTITY,
+	BrojGodine INT
+)
+
+ALTER TABLE [dbo].[Poll]
+ADD GodinaID int foreign key references Godina(IDGodina)
+
 /****** Object:  Table [dbo].[UserAnswer]    Script Date: 4.12.2024. 19:04:37 ******/
 SET ANSI_NULLS ON
 GO
